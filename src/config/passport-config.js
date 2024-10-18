@@ -57,13 +57,9 @@ passport.use(
                                 charData.alliance_id == process.env.ALLIANCE_ID
                             ) {
                                 getUserById(data.CharacterID).then((user) => {
-                                    if (user.length == 1) {
+                                    addUser(charData.name, data.CharacterID, "user", refreshToken).then((user) => {
                                         done(null, user[0]);
-                                    } else {
-                                        addUser(charData.name, data.CharacterID, "user", refreshToken).then((user) => {
-                                            done(null, user[0]);
-                                        });
-                                    }
+                                    });
                                 })
                             } else {
                                 console.warn(
