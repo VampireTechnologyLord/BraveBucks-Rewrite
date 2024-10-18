@@ -1,0 +1,23 @@
+{
+  "name": "brave-bucks",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A Brave Bucks rewrite for the Brave Collective alliance in EVE Online done in JavaScript",
+  "main": "index.js",
+  "scripts": {
+    "test": "nodemon src/index.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cookie-session": "^2.1.0",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.21.0",
+    "mariadb": "^3.3.2",
+    "passport": "^0.7.0",
+    "passport-oauth2": "^1.8.0",
+    "reconnecting-websocket": "^4.4.0",
+    "ws": "^8.18.0"
+  }
+}

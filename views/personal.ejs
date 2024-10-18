@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="shortcut icon" href="https://www.bravecollective.com/i/logo.png" type="image/x-icon">
+        <link
+            rel="stylesheet"
+            href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+        />
+        <style>
+            .brave-primary {
+                background-color: #007ba0;
+            }
+            a:not(.normal-sized) {
+                color: #333333;
+                font-size: 1.5em;
+                padding-right: 20px;
+            }
+            .large-text {
+                font-size: 1.5em;
+            }
+            .icon {
+                padding-right: 10px;
+                padding-left: 10px;
+            }
+
+            .dropdown-button {
+                cursor: pointer;
+            }
+
+            .dropdown {
+                position: relative;
+                display: inline-block;
+            }
+
+            .dropdown-content {
+                display: none;
+                position: absolute;
+                right: 0;
+                top: 50px;
+                background-color: #f1f1f1;
+                min-width: 200px;
+                box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+                z-index: 1;
+            }
+
+            .dropdown-content a {
+                color: black;
+                padding: 12px 16px;
+                text-decoration: none;
+                display: block;
+            }
+
+            .dropdown-content a:hover {
+                background-color: #ddd;
+            }
+
+            .show {
+                display: block;
+            }
+        </style>
+        <script>
+            function toggleDropdown() {
+                document.getElementById("dropdown-id").classList.toggle("show");
+            }
+        </script>
+        <title>BraveBucks - Personal</title>
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg brave-primary">
+            <a class="navbar-brand icon" href="#">
+                <img
+                    src="https://www.bravecollective.com/i/logo.png"
+                    width="52"
+                    height="45"
+                    alt=""
+                />
+            </a>
+            <a class="navbar-brand large-text" href="/">BraveBucks</a>
+            <a href="/personal">Personal</a>
+            <% if (user) { %>
+                <% if (user.role === "manager" || user.role === "admin") { %>
+                    <a href="/management">Management</a>
+                <% } %>
+             <div class="ml-auto">
+                <div class="dropdown">
+                    <img src="https://images.evetech.net/characters/<%= user.user_id %>/portrait?tenant=tranquility&size=64" height="45px" width="auto" class="dropdown-button" alt="Profile" onclick="toggleDropdown()" >
+                    <div id="dropdown-id" class="dropdown-content">
+                        <a class="normal-sized" href="/personal"><%= user.username %></a>
+                        <a class="normal-sized" href="/">Home</a>
+                        <a class="normal-sized" href="/auth/logout">Log Out</a>
+                    </div>
+                </div>
+            </div>
+            <% } else { %>
+            <a class="navbar-brand ml-auto" href="/auth/oauth2">
+                <img
+                    src="https://web.ccpgamescdn.com/eveonlineassets/developers/eve-sso-login-black-large.png"
+                    alt=""
+                />
+            </a>
+            <% } %>
+        </nav>
+        <div
+            class="jumbotron text-center"
+            style="background-color: #f8f9fa; color: #333333"
+        >
+            <h1>Welcome to BraveBucks, <%= user.username %></h1>
+        </div>
+        <h2 class="text-center">Your progress: <%= parseFloat(user.amount ?? 0).toLocaleString('en') %> / <%= parseFloat(amountRequired ?? 0).toLocaleString('en') %> ISK</h2>
+        <div class="progress mx-auto" style="width: 60%; height: 25pt;"> 
+            <div
+                class="progress-bar"
+                role="progressbar"
+                style="width: <%= user.amount / amountRequired * 100 %>%"
+                aria-valuenow="<%= user.amount %>"
+                aria-valuemin="0"
+                aria-valuemax="<%= amountRequired %>"
+            ></div>
+        </div>
+        <!-- make a centered button that is disabled if user.amount < amountRequired -->
+        <div class="text-center" style="margin-top: 10px;">
+            <% if (user.amount < amountRequired) {%>
+            <button class="btn btn-primary" disabled>Not enough ISK</button>
+            <% } else { %>
+            <a href="/personal/payout" class="btn btn-primary">Request Payout</a>
+            <% } %>
+        </div>
+        <br>
+        <hr>
+        <h2 class="text-center">Your 10 most recent payout requests</h2>
+        <div class="container">
+            <table class="table">
+                <tr>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                </tr>
+                <% for (let payout of payouts) { %>
+                    <% if (payout.status == "pending") { %>
+                <tr class="table-info">
+                    <% } else if (payout.status == "paid") { %>
+                <tr class="table-success">
+                    <% } else { %>
+                <tr class="table-danger">
+                    <% } %>
+                    <td><%= `${new Date(payout.date).getFullYear()}-${new Date(payout.date).getMonth() + 1}-${new Date(payout.date).getDate()} ${new Date(payout.date).getHours()}:${new Date(payout.date).getMinutes()}:${new Date(payout.date).getSeconds()}` %></td>
+                    <td><%= parseFloat(payout.amount ?? 0).toLocaleString('en') %> ISK</td>
+                    <td><%= payout.status.toString().toUpperCase() %></td>
+                </tr>
+                <% } %>
+            </table>
+        </div>
+        <br>
+        <hr>
+        <h2 class="text-center">Your 10 most recent kills</h2>
+        <span style="max-width: 50%;">
+        </span>
+         <div class="container">
+            <table class="table">
+                <tr>
+                    <th>ID</th>
+                    <th>Victim</th>
+                    <th>Victim Corporation</th>
+                    <th>Date</th>
+                    <th>Points</th>
+                    <th>Accounted</th>
+                </tr>
+                <% for (let killmail of killmails) { %>
+                <tr>
+                    <td><img src="https://images.evetech.net/types/<%= killmail.ship_type %>/render?size=64" height="40px" width="auto" alt=""> <a class="normal-sized" href="https://zkillboard.com/kill/<%= killmail.killmail_id%>/"><%= killmail.killmail_id %></a></td>
+                    <td><%= killmail.victim_name %></td>
+                    <% if (killmail.victim_alliance) { %>
+                        <td><%= killmail.victim_corporation %> (<%= killmail.victim_alliance %>)</td>
+                    <% } else { %>
+                        <td><%= killmail.victim_corporation %></td>
+                    <% } %>
+                    <td><%= `${new Date(killmail.date).getFullYear()}-${new Date(killmail.date).getMonth() + 1}-${new Date(killmail.date).getDate()} ${new Date(killmail.date).getHours()}:${new Date(killmail.date).getMinutes()}:${new Date(killmail.date).getSeconds()}` %></td>
+                    <td><%= killmail.points %></td>
+                    <% if (killmail.accounted) { %>
+                        <td>Yes</td>
+                    <% } else { %>
+                        <td>No</td>
+                    <% } %>
+                </tr>
+                <% } %>
+
+            </table>
+         </div>
+    </body>
+</html>

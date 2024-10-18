@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="shortcut icon" href="https://www.bravecollective.com/i/logo.png" type="image/x-icon">
+        <link
+            rel="stylesheet"
+            href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+        />
+        <style>
+            .brave-primary {
+                background-color: #007ba0;
+            }
+            a:not(.normal-sized) {
+                color: #333333;
+                font-size: 1.5em;
+                padding-right: 20px;
+            }
+            .large-text {
+                font-size: 1.5em;
+            }
+            .icon {
+                padding-right: 10px;
+                padding-left: 10px;
+            }
+
+            .dropdown-button {
+                cursor: pointer;
+            }
+
+            .dropdown {
+                position: relative;
+                display: inline-block;
+            }
+
+            .dropdown-content {
+                display: none;
+                position: absolute;
+                right: 0;
+                top: 50px;
+                background-color: #f1f1f1;
+                min-width: 200px;
+                box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+                z-index: 1;
+            }
+
+            .dropdown-content a {
+                color: black;
+                padding: 12px 16px;
+                text-decoration: none;
+                display: block;
+            }
+
+            .dropdown-content a:hover {
+                background-color: #ddd;
+            }
+
+            .show {
+                display: block;
+            }
+        </style>
+        <script>
+            function toggleDropdown() {
+                document.getElementById("dropdown-id").classList.toggle("show");
+            }
+        </script>
+        <title>BraveBucks - Settings</title>
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg brave-primary">
+            <a class="navbar-brand icon" href="#">
+                <img
+                    src="https://www.bravecollective.com/i/logo.png"
+                    width="52"
+                    height="45"
+                    alt=""
+                />
+            </a>
+            <a class="navbar-brand large-text" href="/">BraveBucks</a>
+            <a href="/personal">Personal</a>
+            <% if (user) { %>
+                <% if (user.role === "manager" || user.role === "admin") { %>
+                    <a href="/management">Management</a>
+                <% } %>
+             <div class="ml-auto">
+                <div class="dropdown">
+                    <img src="https://images.evetech.net/characters/<%= user.user_id %>/portrait?tenant=tranquility&size=64" height="45px" width="auto" class="dropdown-button" alt="Profile" onclick="toggleDropdown()" >
+                    <div id="dropdown-id" class="dropdown-content">
+                        <a class="normal-sized" href="/personal"><%= user.username %></a>
+                        <a class="normal-sized" href="/">Home</a>
+                        <a class="normal-sized" href="/auth/logout">Log Out</a>
+                    </div>
+                </div>
+            </div>
+            <% } else { %>
+            <a class="navbar-brand ml-auto" href="/auth/oauth2">
+                <img
+                    src="https://web.ccpgamescdn.com/eveonlineassets/developers/eve-sso-login-black-large.png"
+                    alt=""
+                />
+            </a>
+            <% } %>
+        </nav>
+        <br>
+        <div class="container">
+            <h1>User permission control</h1>
+            <br>
+            <select class="form-select" name="user-select" id="user-select">
+                <option selected disabled value="">Select a user</option>
+                <% for (let user of users) { %>
+                    <option value="<%= user.user_id %>"><%= user.username %></option>
+                <% } %>
+            </select>
+            <select name="role-select" id="role-select" class="form-select">
+                <option selected disabled value="">Select a role</option>
+                <option value="user">User</option>
+                <option value="manager">Manager</option>
+                <option value="admin">Admin</option>
+            </select>
+            <script>
+                function redirectUserPermControl() {
+                    window.location.href = `/management/settings/role?id=${document.getElementById('user-select').value}&role=${document.getElementById('role-select').value}`;
+                }
+            </script>
+            <button class="btn btn-primary" onclick="redirectUserPermControl()">Change Role</button>
+        </div>
+        <br>
+        <hr>
+        <br>
+        <div class="container">
+            <h1>Settings Management</h1>
+            <p>Warning: every action taken here is effective immediately and does not ask for confirmation!</p>
+            <br>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Setting</th>
+                        <th scope="col">Value</th>
+                        <th scope="col">Input</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% for (let setting in settings) { %>
+                        <% for (let i = 0; i < settings[setting].length; i++) { %>
+                        <tr>
+                            <td><%= settings[setting][i].path %></td>
+                            <% if (settings[setting][i]) {%>
+                                <% if (settings[setting][i].name != undefined && settings[setting][i].name != null) { %>
+                                    <td><%= settings[setting][i].name %></td>
+                                <% } else { %>
+                                    <td><%= settings[setting][i].value %></td>
+                                <% } %>
+
+                            <% } %>
+                            <% if (["offenseKills.eligibility.victimAlliance", "offenseKills.eligibility.victimCorporation", "offenseKills.eligibility.solarSystems", "defenseKills.eligibility.solarSystems", "adm.eligibility.solarSystems"].includes(settings[setting][i].path)) {%>
+                            <td></td>
+                                <td>
+                                <button class="btn btn-danger" onclick="window.location.href='/management/settings/delete?path=<%= settings[setting][i].path %>&value=<%= settings[setting][i].value %>'">Delete</button>
+                            </td>
+                            <% } else if (["adm.enabled", "offenseKills.enabled", "defenseKills.enabled", "defenseKills.eligibility.ignoreForeign", "defenseKills.eligibility.ignoreFriendlyFire", "offenseKills.eligibility.ignoreForeign", "offenseKills.eligibility.ignoreFriendlyFire", "offenseKills.eligibility.matchLocationAndVictim", "payouts.accountPodKills", "logging.killmailProcessing", "logging.killmailSocketPing", "logging.payouts"].includes(settings[setting][i].path)) { %>
+                            <td></td>
+                            <td>
+                                <button class="btn btn-warning" onclick="window.location.href='/management/settings/toggle?path=<%= settings[setting][i].path %>&value=<%= settings[setting][i].value %>'">Toggle</button>
+                            </td>
+                            <% } else { %>
+                                <td>
+                                    <input type="number" id="<%= settings[setting][i].path %>" value="<%= settings[setting][i].value %>" class="form-control">
+                                </td>
+                                <td>
+                                    <button class="btn btn-warning" onclick="window.location.href='/management/settings/update?path=<%= settings[setting][i].path %>&oldValue=<%= settings[setting][i].value %>&newValue='+document.getElementById('<%= settings[setting][i].path %>').value">Update</button>
+                                </td>
+                            <% } %>
+                        </tr>
+                        <% } %>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+        <br>
+        <div class="container">
+            <h1>Add Settings Entry</h1>
+            <div class="row">
+                <div class="col">
+                    <select style="display: inline" name="path-select" id="path-select" class="form-select">
+                        <option selected disabled value="">Select a Setting path</option>
+                        <option value="defenseKills.eligibility.solarSystems">Eligible solar systems for defensive kills</option>
+                        <option value="offenseKills.eligibility.solarSystems">Eligible solar systems for offensive kills</option>
+                        <option value="adm.eligibility.solarSystems">Eligible solar systems for adm</option>
+                        <option value="offenseKills.eligibility.victimAlliance">Eligible offensive victim alliance</option>
+                        <option value="offenseKills.eligibility.victimCorporation">Eligible offensive victim corporation</option>
+                    </select>
+                </div>
+                <div class="col">
+                    <input style="display: inline" type="text" id="settings-value" class="form-control" placeholder="Value">
+                </div>
+                <div class="col">
+                    <button class="btn btn-primary" onclick="window.location.href='/management/settings/add?path='+document.getElementById('path-select').value+'&value='+document.getElementById('settings-value').value">Add</button>
+                </div>
+            </div>
+        </div>
+        <br>
+        <br>
+    </body>
+</html>
