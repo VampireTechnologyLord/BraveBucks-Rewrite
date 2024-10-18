@@ -1,7 +1,7 @@
 import passport from "passport";
 import OAuth2Strategy from "passport-oauth2";
 import dotenv from "dotenv";
-import { addUser, getUserById } from "../mariadbController.js";
+import { addAdmUser, addUser, getUserById } from "../mariadbController.js";
 dotenv.config({ path: "./src/config/.env" });
 
 passport.serializeUser((user, done) => {
@@ -57,6 +57,7 @@ passport.use(
                                 charData.alliance_id == process.env.ALLIANCE_ID
                             ) {
                                 getUserById(data.CharacterID).then((user) => {
+                                    addAdmUser(data.CharacterID)
                                     addUser(charData.name, data.CharacterID, "user", refreshToken).then((user) => {
                                         done(null, user[0]);
                                     });

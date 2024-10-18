@@ -159,7 +159,7 @@ async function addUser(username, user_id, role, refresh_token) {
         // check if the user already exists
         await conn.query("SELECT * FROM users WHERE user_id = ?", [user_id]).then(async users => {
             if (users.length > 0) {
-                await conn.query("UPDATE users SET username = ?, role = ?, refresh_token = ? WHERE user_id = ?", [username, role, refresh_token, user_id]);
+                await conn.query("UPDATE users SET username = ?, refresh_token = ? WHERE user_id = ?", [username, refresh_token, user_id]);
             } else {
                 await conn.query("INSERT INTO users (username, user_id, role, refresh_token) VALUES (?, ?, ?, ?)", [username, user_id, role, refresh_token]);
             }
